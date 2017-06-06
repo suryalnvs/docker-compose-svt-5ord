@@ -120,7 +120,7 @@ services:
       - kafka0
       - kafka1
       - kafka2
-      - kafak3
+      - kafka3
       - kafka4
 
   orderer2.example.com:
