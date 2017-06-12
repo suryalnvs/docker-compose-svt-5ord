@@ -3,9 +3,11 @@
 #set -e
 
 CHANNEL_NAME=$1
+NUM_CH=$2
 : ${CHANNEL_NAME:="mychannel"}
 echo $CHANNEL_NAME
-
+: ${NUM_CH:="1"}
+echo $NUM_CH
 export FABRIC_ROOT=$PWD/../..
 export FABRIC_CFG_PATH=$PWD
 echo
@@ -70,22 +72,24 @@ function generateChannelArtifacts() {
 	echo "#########  Generating Orderer Genesis block ##############"
 	echo "##########################################################"
 	$CONFIGTXGEN -profile TwoOrgsOrdererGenesis -outputBlock ./channel-artifacts/orderer.genesis.block
+        for (( i=0 ; i<$NUM_CH ; i++ ))
+        do 
+		echo
+		echo "#################################################################"
+		echo "### Generating channel configuration transaction 'channel.tx' ###"
+		echo "#################################################################"
+		$CONFIGTXGEN -profile TwoOrgsChannel -outputCreateChannelTx ./channel-artifacts/mychannel$i.tx -channelID $CHANNEL_NAME$i
 
-	echo
-	echo "#################################################################"
-	echo "### Generating channel configuration transaction 'channel.tx' ###"
-	echo "#################################################################"
-	$CONFIGTXGEN -profile TwoOrgsChannel -outputCreateChannelTx ./channel-artifacts/mychannel.tx -channelID $CHANNEL_NAME
-
-	echo
-	echo "#################################################################"
-	echo "### Generating anchor peer update for Org1MSP/Org2MSP/Org3MSP ###"
-	echo "#################################################################"
-	for orgMsp in Org1MSP Org2MSP ; do
-	    $CONFIGTXGEN -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/${orgMsp}anchors.tx -channelID $CHANNEL_NAME -asOrg $orgMsp
-    done
-	echo
-	echo
+		echo
+		echo "#################################################################"
+		echo "### Generating anchor peer update for Org1MSP/Org2MSP/Org3MSP ###"
+		echo "#################################################################"
+		for orgMsp in Org1MSP Org2MSP ; do
+	    		$CONFIGTXGEN -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/${orgMsp}anchors.tx -channelID $CHANNEL_NAME$i -asOrg $orgMsp
+    		done
+		echo
+		echo
+        done
 }
 
 generateCerts
